@@ -11,13 +11,18 @@ menulist
         class="filter-tree"
         :data="data"
         :props="defaultProps"
-        show-checkbox
         default-expand-all
+        show-checkbox
+        node-key="id"
         :filter-node-method="filterNode"
-        ref="tree">
+        ref="tree"
+        @node-click="handleNodeClick">
       </el-tree>
-    </div>
+      <div>
 
+      </div>
+
+  </div>
   </div>
 </template>
 
@@ -32,7 +37,14 @@ menulist
         defaultProps: {
           children: 'menuInfoList',//下级权限列表
           label: 'menuName'//权限名字
-        }
+        },
+        entitymod:{},
+        dialogVisible:false,
+        menuName:"当前工作的菜单名称-",
+        addHidden:true,
+        updateHidden:true,
+        deleteHidden:true,
+        addOwnMenu:true
 
       }
     },
@@ -55,6 +67,7 @@ menulist
         //menuName 过滤方法
         return data.menuName.indexOf(value) !== -1;
       }
+
     }
   }
 </script>
