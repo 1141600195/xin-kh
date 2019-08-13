@@ -214,17 +214,31 @@
       },
       deleteroleById(index, row) {
         this.$axios.post(this.domain.serverpath + 'deleteRoleById', row).then((res) => {
-          if (res.data == 200) {
+          if (res.data.code==200) {
             this.$message({
               showClose: true,
-              message: "删除成功",
+              message: res.data.success,
               type: 'success',
               duration: 1000
             });
             this.getroleList();
           }
-        }).catch(
-
+          if (res.data.code==500) {
+            this.$message({
+              showClose: true,
+              message: res.data.error,
+              type: 'error',
+              duration: 1000
+            });
+            this.getroleList();
+          }
+        }).catch((x)=>{
+            this.$message({
+              message: '未有操作权限',
+              type: 'error',
+              duration:'1000'
+            });
+          }
         )
       },
       addRole(id) {
@@ -251,26 +265,46 @@
             });
           })
         } else {
-          this.$axios.post(this.domain.serverpath + 'addRole', this.entityRole).then((res) => {
-            if (res.data == 200) {
-              this.$message({
-                showClose: true,
-                message: "添加成功",
-                type: 'success',
-                duration: 1000
-              });
-              this.getroleList();
-              this.entityRole = {};
-              this.dialogFormVisible = false
-            }
 
-          }).catch((x)=>{
-            this.$message({
-              message: '未有操作权限',
-              type: 'error',
-              duration:'1000'
-            });
-          })
+          if(this.entityRole.roleName==null){
+            alert("请填写角色名");
+          }else if(this.entityRole.miaoShu==null){
+            alert("请填写描述信息");
+          }else {
+            this.$axios.post(this.domain.serverpath + 'addRole', this.entityRole).then((res) => {
+              if (res.data.code == 200) {
+                this.$message({
+                  showClose: true,
+                  message: res.data.success,
+                  type: 'success',
+                  duration: 1000
+                });
+                this.getroleList();
+                this.entityRole = {};
+                this.dialogFormVisible = false
+              }
+              if (res.data.code == 500) {
+                this.$message({
+                  showClose: true,
+                  message: res.data.error,
+                  type: 'error',
+                  duration: 1000
+                });
+                this.getroleList();
+                this.entityRole = {};
+                this.dialogFormVisible = false
+              }
+
+            }).catch((x)=>{
+              this.$message({
+                message: '未有操作权限',
+                type: 'error',
+                duration:'1000'
+              });
+            })
+          }
+
+
         }
       },
       diaclose() {
