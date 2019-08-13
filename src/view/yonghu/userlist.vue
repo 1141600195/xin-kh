@@ -3,14 +3,12 @@
     <!--   模糊查询   -->
     <el-form :inline="true" :model="mypage" class="demo-form-inline" style="text-align: center">
 
-
       <el-form-item label="用户名">
         <el-input v-model="mypage.name" placeholder="用户名"></el-input>
       </el-form-item>
 
       <el-form-item label="创建日期">
         <div class="block">
-
           <el-date-picker
             v-model="mypage.data1"
             value-format="yyyy-MM-dd"
@@ -24,7 +22,6 @@
             placeholder="选择日期">
           </el-date-picker>
         </div>
-
       </el-form-item>
 
 
@@ -40,17 +37,16 @@
         <el-button type="primary" @click="getuserList">查询</el-button>
       </el-form-item>
 
-
     </el-form>
 
-    <el-button type="primary" @click="dialogFormVisible = true">+添加新用户</el-button>
+    <el-button type="primary" @click="dialogFormVisible = true" round>+添加新用户</el-button>
+    <el-button type="primary" @click="downloadExcelone" round>+导出</el-button>
 
 
     <!--添加-->
     <el-dialog title="添加" :visible.sync="dialogFormVisible" :before-close="diaclose">
 
       <el-form :model="entityUser">
-
 
         <el-form :inline="true" :model="entityUser" class="demo-form-inline">
           <el-form-item label="用户名" :label-width="formLabelWidth">
@@ -70,6 +66,23 @@
         </el-form-item>
 
 
+        <el-form-item label="照片">
+          <el-image
+            style="width: 50px; height: 50px"
+            :src="url+entityUser.path"
+            v-if="entityUser.path!=null"></el-image>
+          <el-upload
+            class="avatar-uploader"
+            action="http://localhost:10020/toUpload"
+            :show-file-list="false"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload">
+            <img v-if="imageUrl" :src="imageUrl" class="avatar">
+            <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+          </el-upload>
+        </el-form-item>
+
+
         <el-form-item label="密码" :label-width="formLabelWidth">
           <el-input type="password" v-model="entityUser.password" autocomplete="off"></el-input>
         </el-form-item>
@@ -83,7 +96,7 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false, entityUser={} ">取 消</el-button>
-        <el-button type="primary" @click="addUser(entityUser.id)">确 定</el-button>
+        <el-button type="primary" @click="addUser(entityUser.id,'addForm')">确 定</el-button>
       </div>
     </el-dialog>
 
@@ -106,8 +119,8 @@
           </el-select>
         </template>
         <span slot="footer" class="dialog-footer">
-            <el-button @click="diaclose">取 消</el-button>
-        <el-button type="primary" @click="addbindRole">确 定</el-button>
+          <el-button @click="diaclose">取 消</el-button>
+          <el-button type="primary" @click="addbindRole">确 定</el-button>
         </span>
       </el-dialog>
     </div>
@@ -117,12 +130,13 @@
     <el-table
       :data="userList"
       style="width: 100%"
-      :default-sort="{prop: 'id', order: 'ascending'}"
+      :default-sort="{prop:'createTime', order: 'descending'}"
 
       ref="multipleTable"
       tooltip-effect="dark"
       @selection-change="handleSelectionChange"
     >
+
       <el-table-column
         type="selection"
         width="55">
@@ -174,9 +188,13 @@
       </el-table-column>
 
       <el-table-column
-        prop="imgulr"
-        label="图片路径"
-        width="180">
+        label="图片"
+        width="150">
+        <template slot-scope="scope">
+          <el-image
+            style="width: 50px; height: 50px"
+            :src="url+scope.row.path"></el-image>
+        </template>
       </el-table-column>
 
       <el-table-column
@@ -186,6 +204,7 @@
       </el-table-column>
 
       <el-table-column
+        prop="createTime"
         label="创建日期"
         width="120">
         <template slot-scope="scope">{{ scope.row.createTime }}</template>
@@ -198,6 +217,7 @@
             type="danger"
             @click="deleteById(scope.$index, scope.row)">删除
           </el-button>
+
           <el-button
             size="mini"
             @click="updateUser(scope.$index, scope.row)">编辑
@@ -207,7 +227,6 @@
           <el-button size="mini" type="primary" @click="bindRole(scope.$index, scope.row)" v-if="scope.row.id!=pid">
             绑定角色
           </el-button>
-
 
         </template>
       </el-table-column>
@@ -251,6 +270,8 @@
         pid: this.$store.state.userInfo.id,
         value: '',//绑定选中角色的id
         userId: "",//添加角色的id
+        imageUrl: "",
+        url: "http://localhost:8090/",
       }
     },
     mounted: function () {
@@ -297,11 +318,21 @@
         alert(JSON.stringify(row.id));
         this.$axios.post(this.domain.serverpath + 'deleteUserById', row).then((res) => {
           console.log(res.data);
-          if (res.data == 200) {
+
+          if (res.data.code == 200) {
             this.$message({
               showClose: true,
-              message: "删除成功",
+              message: res.data.success,
               type: 'success',
+              duration: 1000
+            });
+            this.getuserList();
+          }
+          if (res.data.code == 500) {
+            this.$message({
+              showClose: true,
+              message: res.data.error,
+              type: 'error',
               duration: 1000
             });
             this.getuserList();
@@ -318,11 +349,15 @@
       handleSelectionChange(val) {
         this.multipleSelection = val;
       },
-      addUser(id) {
+      addUser(id, formName) {
         if (id > 0) {
+
           this.$axios.post(this.domain.serverpath + 'updateUser', this.entityUser).then((res) => {
+
             alert(JSON.stringify(this.entityUser));
+
             if (res.data == 200) {
+
               this.$message({
                 showClose: true,
                 message: "修改成功",
@@ -331,6 +366,7 @@
               });
               this.getuserList();
               this.entityUser = {};
+              this.fileList = [];
               this.dialogFormVisible = false
             }
           }).catch((x) => {
@@ -341,44 +377,118 @@
             });
           })
         } else {
-          if (this.entityUser.userName == null) {
-            alert("用户名不能为空");
-          } else if (this.entityUser.loginName == null) {
-            alert("登录名不能为空");
-          } else if (this.entityUser.sex == null) {
-            alert("请选择性别");
-          } else if (this.entityUser.password == null) {
-            alert("请输入密码");
-          } else if (this.entityUser.password1 == null) {
-            alert("请再次输入密码");
-          } else if (this.entityUser.password !== this.entityUser.password1) {
-            alert("两次密码输入不一致");
-          } else {
-            this.$axios.post(this.domain.serverpath + 'addUser', this.entityUser).then((res) => {
 
-              if (res.data == 200) {
-                this.$message({
-                  showClose: true,
-                  message: "添加成功",
-                  type: 'success',
-                  duration: 1000
-                });
-                this.getuserList();
-                this.entityUser = {};
-                this.dialogFormVisible = false
-              } else if (res.data == 505) {
-                alert("登录名重复");
-              }
 
-            }).catch((x) => {
-                this.$message({
-                  message: '未有操作权限',
-                  type: 'error',
-                  duration: '1000'
-                });
-              }
-            )
+          //用户名验证
+          if (this.entityUser.userName == null || this.entityUser.userName === '') {
+            this.$message({
+              message: '用户名不能为空',
+              type: 'error',
+              duration: '1000'
+            });
+            return;
           }
+
+          //登录名验证
+
+          if (this.entityUser.loginName == null) {
+            this.$message({
+              message: '登录名不能为空',
+              type: 'error',
+              duration: '1000'
+            });
+            return;
+          }
+
+
+          //登录名验证
+          var patrn = /[0-9a-zA-Z]{4,9}/
+          if (!patrn.test(this.entityUser.loginName)) {
+            this.$message({
+              message: '登录名必须是由4-9位数字和字母组合',
+              type: 'error',
+              duration: '1000'
+            });
+            return;
+          }
+
+          //性别验证
+          if (this.entityUser.sex == null || this.entityUser.sex === '') {
+            this.$message({
+              message: '请选择性别',
+              type: 'error',
+              duration: '1000'
+            });
+            return;
+          }
+
+          //图片验证
+          if (this.imageUrl == null || this.imageUrl === '') {
+            this.$message({
+              message: '请上传头像',
+              type: 'error',
+              duration: '1000'
+            });
+            return;
+          }
+
+
+          //密码验证
+
+          if (this.entityUser.password == null) {
+            this.$message({
+              message: '密码不能为空',
+              type: 'error',
+              duration: '1000'
+            });
+            return;
+          }
+
+          //密码验证
+          var patrn = /[0-9a-zA-Z]{4,9}/;
+          if (!patrn.test(this.entityUser.password)) {
+            this.$message({
+              message: '密码必须是由4-9位数字和字母组合',
+              type: 'error',
+              duration: '1000'
+            });
+            return;
+          }
+
+          if (this.entityUser.password != this.entityUser.password1) {
+            this.$message({
+              message: '两次密码不一致',
+              type: 'error',
+              duration: '1000'
+            });
+            return;
+          }
+
+          this.$axios.post(this.domain.serverpath + 'addUser', this.entityUser).then((res) => {
+
+            if (res.data == 200) {
+
+              this.$message({
+                showClose: true,
+                message: "添加成功",
+                type: 'success',
+                duration: 1000
+              });
+              this.getuserList();
+              this.entityUser = {};
+              this.dialogFormVisible = false
+            } else if (res.data == 505) {
+              alert("登录名重复");
+            }
+
+          }).catch((x) => {
+              this.$message({
+                message: '未有操作权限',
+                type: 'error',
+                duration: '1000'
+              });
+            }
+          )
 
 
         }
@@ -388,6 +498,7 @@
         this.entityUser = row;
         this.entityUser.password = "";
         this.dialogFormVisible = true;
+        this.imageUrl = "";
       },
       diaclose() {
         this.entityUser = {};
@@ -395,17 +506,18 @@
         this.bindroledia = false;
         this.getuserList();
         this.value = '';
+        this.imageUrl = "";
       },
       bindRole(index, row) {
         this.userId = row.id;
         this.bindroledia = true;
         this.$axios.post(this.domain.serverpath + "bdrolelist").then((res) => {
           this.options = res.data;
-        }).catch((x)=>{
+        }).catch((x) => {
           this.$message({
             message: '未有操作权限',
             type: 'error',
-            duration:'1000'
+            duration: '1000'
           });
         })
       },
@@ -429,21 +541,76 @@
             this.bindroledia = false;
           }
         }).catch(
-          (x)=>{
+          (x) => {
             this.$message({
               message: '未有操作权限',
               type: 'error',
-              duration:'1000'
+              duration: '1000'
             });
           }
         )
         this.value = '';
 
-      }
+      },
+      handleAvatarSuccess(res, file) {
+        this.entityUser.path = file.name;
+        this.imageUrl = URL.createObjectURL(file.raw);
+      },
+      beforeAvatarUpload(file) {
+        const isLt2M = file.size / 1024 / 1024 < 2;
+        return true;
+      },//导出
+      downloadExcelone() {
+
+        this.$axios.post(this.domain.serverpath + "daochu", this.userList).then((res) => {
+          if (res.data > 0) {
+            this.$message({
+              showClose: true,
+              message: "下载成功",
+              type: 'success',
+              duration: 1000
+            });
+          } else {
+            this.$message({
+              showClose: true,
+              message: "下载失败",
+              type: 'success',
+              duration: 1000
+            });
+          }
+        })
+      },
+
+
     }
   }
 </script>
 
 <style>
+  .avatar-uploader .el-upload {
+    border: 1px dashed #d9d9d9;
+    border-radius: 6px;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
 
+  .avatar-uploader .el-upload:hover {
+    border-color: #409EFF;
+  }
+
+  .avatar-uploader-icon {
+    font-size: 28px;
+    color: #8c939d;
+    width: 178px;
+    height: 178px;
+    line-height: 178px;
+    text-align: center;
+  }
+
+  .avatar {
+    width: 178px;
+    height: 178px;
+    display: block;
+  }
 </style>
