@@ -58,6 +58,10 @@
           </el-form-item>
         </el-form>
 
+        <el-form-item label="手机号" :label-width="formLabelWidth">
+          <el-input v-model="entityUser.tel" autocomplete="off"></el-input>
+        </el-form-item>
+
         <el-form-item label="性别" :label-width="formLabelWidth">
           <el-radio-group v-model="entityUser.sex">
             <el-radio-button label="1">男</el-radio-button>
@@ -411,6 +415,24 @@
             });
             return;
           }
+          //手机号验证
+          var patrn =/0?(13|14|15|18|17)[0-9]{9}/
+          if(this.entityUser.tel == null || this.entityUser.tel === ''){
+            this.$message({
+              message: '手机号不能为空',
+              type: 'error',
+              duration: '1000'
+            });
+            return;
+          } else if (!patrn.test(this.entityUser.tel)) {
+            this.$message({
+              message: '请输入正确的国内手机号',
+              type: 'error',
+              duration: '1000'
+            });
+            return;
+          }
+
 
           //性别验证
           if (this.entityUser.sex == null || this.entityUser.sex === '') {

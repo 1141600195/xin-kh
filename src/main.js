@@ -51,7 +51,8 @@ axios.interceptors.request.use((config) => {
     //没有Cookie的话添加Cookie
     let aucokie = Cookies.get("authcode")
     if (aucokie == null) {
-      Cookies.set("authcode", "", {path: "/", domain: "localhost", age: -1})
+      //jscookies插件不能用 换成window.document.cookie
+      window.document.cookie = "authcode="+ ";path=/;expires=-1;domain=localhost";
     }
   }
 
