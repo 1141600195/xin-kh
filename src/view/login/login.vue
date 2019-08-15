@@ -144,7 +144,8 @@
 
                 //七天免登陆登陆成功存键
               if (this.checked) {
-                setCookie("jian", "zhi", 7);
+                setCookie("loginName", this.ruleForm.username, 7);
+                setCookie("password", this.ruleForm.password, 7);
               }
 
               //存储token到vuex中，
@@ -299,10 +300,10 @@
     },
     mounted() {
       console.log("进入login mounted方法");
-      //七天免登陆判断cookies有没有存这个键
-      if (getCookie("jian")) {
-        this.$router.push({path: '/system'})
-      } else {
+
+
+
+
         var _this = this;
         var code = "";
         //从后台获取滑动验证码1
@@ -313,11 +314,19 @@
           //向浏览器写一个Cookie
           //document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
           _this.moveCode(code, _this);
+          //七天免登陆判断cookies有没有存这个键
+          if(getCookie("loginName")!=null&&getCookie("password")!=null){
+
+            this.$refs.coderef.value=code;
+            this.ruleForm.username=getCookie("loginName");
+            this.ruleForm.password=getCookie("password");
+            this.submitForm('ruleForm');
+          }
         }).catch((error) => {
 
         })
       }
-    }
+
   }
 </script>
 
