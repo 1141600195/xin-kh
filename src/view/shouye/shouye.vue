@@ -80,6 +80,9 @@
   import mymenu from './datamenu.vue'
   import mymain from './datamain.vue'
 
+  //七天免登陆
+  import {delCookie, getCookie, setCookie} from "../../js/util";
+
   const userinfo = {};
 
   export default {
@@ -167,6 +170,11 @@
             this.$axios.post(this.domain.ssoserverpath + "loginout", this.$store.state.userInfo).then((response) => {
               let sts = response.data.success;
               if (sts == "ok") {
+
+                //七天免登陆清空cookies
+                delCookie("jian");
+
+
                 //todo 使用全局没用session
                 // window.sessionStorage.clear();
                 this.$message({

@@ -14,8 +14,9 @@
             <el-button slot="prepend" icon="iconfont icon-guanliyuanrenzheng"></el-button>
           </el-input>
         </el-form-item>
-        <el-form-item  prop="password">
-          <el-input type="password" placeholder="请输入认证密码" v-model="ruleForm.password" @keyup.enter.native="submitForm('ruleForm')">
+        <el-form-item prop="password">
+          <el-input type="password" placeholder="请输入认证密码" v-model="ruleForm.password"
+                    @keyup.enter.native="submitForm('ruleForm')">
             <el-button slot="prepend" icon="iconfont icon-yuechi"></el-button>
           </el-input>
         </el-form-item>
@@ -23,7 +24,7 @@
         <el-form-item prop="code">
           <div class="form-inline-input">
             <div class="code-box" id="code-box">
-              <input ref="coderef" type="text" name="code" class="code-input" />
+              <input ref="coderef" type="text" name="code" class="code-input"/>
               <p></p>
               <span style="color:#909399">
                      拖动验证
@@ -32,12 +33,16 @@
           </div>
         </el-form-item>
 
+        <template>
+          <!-- `checked` 为 true 或 false -->
+          <el-checkbox v-model="checked">七天免登录</el-checkbox>
+        </template>
 
         <div class="login-btn">
           <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
         </div>
         <!-- 登录进度 -->
-        <el-progress ref="jindu" :style="jindustyle"  :text-inside="true"
+        <el-progress ref="jindu" :style="jindustyle" :text-inside="true"
                      :stroke-width="18"
                      :percentage="percent"
                      status="success"></el-progress>
@@ -46,130 +51,141 @@
     </div>
 
 
-
   </div>
 </template>
 
 <script>
+  //七天免登陆
+  import {delCookie, getCookie, setCookie} from "../../js/util";
+
   export default {
     name: "login",
-    data(){
-      return{
-        divimg:{//背景图片的使用
-          backgroundImage:"url(" + require('../../assets/yun.jpg') + ")",
+    data() {
+      return {
+        checked: false,
+        divimg: {//背景图片的使用
+          backgroundImage: "url(" + require('../../assets/yun.jpg') + ")",
           backgroundRepeat: "no-repeat",
-          height:"100%",
-          width:"100%",
-          overflow:"hidden",
-          backgroundSize:"cover"
+          height: "100%",
+          width: "100%",
+          overflow: "hidden",
+          backgroundSize: "cover"
         },
-        percent:0,
-        jindustyle:{
-          display:'none'
+        percent: 0,
+        jindustyle: {
+          display: 'none'
         },
         ruleForm: {
-          username:'kh',
-          password:'123456'
+          username: 'kh',
+          password: '123456'
         },
         rules: {
           username: [
-            { required: true, message: '请输入用户名', trigger: 'blur' }
+            {required: true, message: '请输入用户名', trigger: 'blur'}
           ],
           password: [
-            { required: true, message: '请输入密码', trigger: 'blur' }
+            {required: true, message: '请输入密码', trigger: 'blur'}
           ]
         }
       }
     },
-    methods:{
-      submitForm(ruleid){
+    methods: {
+      submitForm(ruleid) {
 
-        let code=this.$refs.coderef.value;
-        if(code==null||code==""){
+        let code = this.$refs.coderef.value;
+        if (code == null || code == "") {
           const h = this.$createElement;
           this.$notify({
             title: '提示信息：',
-            message: h('i', { style: 'font-style:normal'}, '请进行拖动校验！'),
+            message: h('i', {style: 'font-style:normal'}, '请进行拖动校验！'),
             type: 'warning',
-            duration:1500 //延时时间
+            duration: 1500 //延时时间
           });
-        }else{
+        } else {
           //登陆操作
-          let par={};
-          par.loginname=this.ruleForm.username;
-          par.password=this.ruleForm.password;
-          if(this.ruleForm.username==""||this.ruleForm.username==null){
+          let par = {};
+          par.loginname = this.ruleForm.username;
+          par.password = this.ruleForm.password;
+          if (this.ruleForm.username == "" || this.ruleForm.username == null) {
             this.$notify.info({
               title: '提示',
               message: '请填写用户名'
             });
             return;
           }
-          if(this.ruleForm.password==""||this.ruleForm.password==null){
+          if (this.ruleForm.password == "" || this.ruleForm.password == null) {
             this.$notify.info({
               title: '提示',
               message: '请填写密码'
             });
             return;
           }
-          par.code=this.$refs.coderef.value;
+          par.code = this.$refs.coderef.value;
           //转JSON串
           //let canshu=this.toAes.encrypt(JSON.stringify(par));
-         // let params={canshu:canshu};
+          // let params={canshu:canshu};
           //let qs=require("qs");
           //打开登陆进度条
-          this.$data.jindustyle.display='block';
+          this.$data.jindustyle.display = 'block';
           //每0.1秒更新一下进度
-          var timer=setInterval(()=>{
-            let pp=this.$data.percent+10;
-            if(pp>=100){
-              pp=99;
+          var timer = setInterval(() => {
+            let pp = this.$data.percent + 10;
+            if (pp >= 100) {
+              pp = 99;
             }
-            this.$data.percent=pp;
-          },100)
+            this.$data.percent = pp;
+          }, 100)
           //从cookie中取出某一个名称的Cookie的值
-          par.codekey=this.Cookies.get("authcode")
+          par.codekey = this.Cookies.get("authcode")
 
-          this.$axios.post(this.domain.ssoserverpath+"login",par).then((response)=>{
-            let respo=response.data;
-            if(respo.code==200){
+          this.$axios.post(this.domain.ssoserverpath + "login", par).then((response) => {
+            let respo = response.data;
+            if (respo.code == 200) {
+
+                //七天免登陆登陆成功存键
+              if (this.checked) {
+                setCookie("jian", "zhi", 7);
+              }
 
               //存储token到vuex中，
-              this.$store.state.token=response.data.token
-              this.$store.state.userInfo=response.data.result
-             //todo 使用全局没用session
+              this.$store.state.token = response.data.token
+              this.$store.state.userInfo = response.data.result
+              //todo 使用全局没用session
               // window.sessionStorage.setItem("userInfo",JSON.stringify(response.data.result))
               //关闭加载窗
-              this.$data.percent=100
+              this.$data.percent = 100
               //隐藏进度条
-              this.$data.jindustyle.display='none'
+              this.$data.jindustyle.display = 'none'
               //关闭定时
               clearInterval(timer)
 
               //跳转到首页界面
               //将用户ID存入到全局的VUE对象中
 
-              this.$router.push({path:'/view/shouye/shouye',query:{username:response.data.result.userName,userid:response.data.result.id}});
+              this.$router.push({
+                path: '/view/shouye/shouye',
+                query: {username: response.data.result.userName, userid: response.data.result.id}
+              });
 
-            }else if(respo.error!=null){
+            } else if (respo.error != null) {
               //关闭加载窗
-              this.$data.percent=100
+              this.$data.percent = 100
               //隐藏进度条
-              this.$data.jindustyle.display='none'
+              this.$data.jindustyle.display = 'none'
               //关闭定时
               clearInterval(timer)
               this.$notify.error({
                 title: '提示',
-                duration:1000,
+                duration: 1000,
                 message: respo.error
               });
             }
 
-          }).catch((error)=>{
+          }).catch((error) => {
             //关闭加载窗
-            this.$data.percent=100;
+            this.$data.percent = 100;
             //隐藏进度条
-            this.$data.jindustyle.display='none';
+            this.$data.jindustyle.display = 'none';
             //关闭定时
             clearInterval(timer);
             this.$notify.error({
@@ -183,92 +199,95 @@
 
       },
       //拖动验证start
-      getOffset(box,direction){
-        var setDirection = (direction == 'top') ? 'offsetTop' : 'offsetLeft' ;
+      getOffset(box, direction) {
+        var setDirection = (direction == 'top') ? 'offsetTop' : 'offsetLeft';
         var offset = box[setDirection];
         var parentBox = box.offsetParent;
-        while(parentBox){
-          offset+=parentBox[setDirection];
+        while (parentBox) {
+          offset += parentBox[setDirection];
           parentBox = parentBox.offsetParent;
         }
         parentBox = null;
         return parseInt(offset);
       },
-      moveCode(code,_this){
-        var fn = {codeVluae : code};
+      moveCode(code, _this) {
+        var fn = {codeVluae: code};
         var box = document.querySelector("#code-box"),
           progress = box.querySelector("p"),
           codeInput = box.querySelector('.code-input'),
           evenBox = box.querySelector("span");
         //默认事件
-        var boxEven = ['mousedown','mousemove','mouseup'];
+        var boxEven = ['mousedown', 'mousemove', 'mouseup'];
         //改变手机端与pc事件类型
-        if(typeof document.ontouchstart == 'object'){
-          boxEven = ['touchstart','touchmove','touchend'];
+        if (typeof document.ontouchstart == 'object') {
+          boxEven = ['touchstart', 'touchmove', 'touchend'];
         }
-        var goX,offsetLeft,deviation,evenWidth,endX;
-        function moveFn(e){
+        var goX, offsetLeft, deviation, evenWidth, endX;
+
+        function moveFn(e) {
           e.preventDefault();
           e = (boxEven['0'] == 'touchstart') ? e.touches[0] : e || window.event;
           endX = e.clientX - goX;
           endX = (endX > 0) ? (endX > evenWidth) ? evenWidth : endX : 0;
-          if(endX > evenWidth * 0.7){//验证百分比70%
+          if (endX > evenWidth * 0.7) {//验证百分比70%
             progress.innerText = '松开验证';
             progress.style.backgroundColor = "#66CC66";
-          }else{
+          } else {
             progress.innerText = '';
             progress.style.backgroundColor = "#FFFF99";
           }
-          progress.style.width = endX+deviation+'px';
-          evenBox.style.left = endX+'px';
+          progress.style.width = endX + deviation + 'px';
+          evenBox.style.left = endX + 'px';
         }
+
         function removeFn() {
-          document.removeEventListener(boxEven['2'],removeFn,false);
-          document.removeEventListener(boxEven['1'],moveFn,false);
-          if(endX > evenWidth * 0.8){
+          document.removeEventListener(boxEven['2'], removeFn, false);
+          document.removeEventListener(boxEven['1'], moveFn, false);
+          if (endX > evenWidth * 0.8) {
             progress.innerText = '验证成功';
-            progress.style.width = evenWidth+deviation+'px';
-            evenBox.style.left = evenWidth+'px'
+            progress.style.width = evenWidth + deviation + 'px';
+            evenBox.style.left = evenWidth + 'px'
             codeInput.value = fn.codeVluae;
             evenBox.onmousedown = null;
             _this.ruleForm.verification = true;
 
             //alert( codeInput.value);
 
-          }else{
+          } else {
             progress.style.width = '0px';
             evenBox.style.left = '0px';
           }
         };
-        function getOffset(box,direction){
-          var setDirection = (direction == 'top') ? 'offsetTop' : 'offsetLeft' ;
+
+        function getOffset(box, direction) {
+          var setDirection = (direction == 'top') ? 'offsetTop' : 'offsetLeft';
           var offset = box[setDirection];
           var parentBox = box.offsetParent;
-          while(parentBox){
-            offset+=parentBox[setDirection];
+          while (parentBox) {
+            offset += parentBox[setDirection];
             parentBox = parentBox.offsetParent;
           }
           parentBox = null;
           return parseInt(offset);
         };
-        evenBox.addEventListener(boxEven['0'], function(e) {
+        evenBox.addEventListener(boxEven['0'], function (e) {
           e = (boxEven['0'] == 'touchstart') ? e.touches[0] : e || window.event;
           goX = e.clientX,
-            offsetLeft = getOffset(box,'left'),
+            offsetLeft = getOffset(box, 'left'),
             deviation = this.clientWidth,
             evenWidth = box.clientWidth - deviation,
             endX;
-          document.addEventListener(boxEven['1'],moveFn,false);
-          document.addEventListener(boxEven['2'],removeFn,false);
-        },false);
-        fn.setCode = function(code){
-          if(code)
+          document.addEventListener(boxEven['1'], moveFn, false);
+          document.addEventListener(boxEven['2'], removeFn, false);
+        }, false);
+        fn.setCode = function (code) {
+          if (code)
             fn.codeVluae = code;
         }
-        fn.getCode = function(){
+        fn.getCode = function () {
           return fn.codeVluae;
         }
-        fn.resetCode = function(){
+        fn.resetCode = function () {
           alert("====")
           evenBox.removeAttribute('style');
           progress.removeAttribute('style');
@@ -278,70 +297,81 @@
       }//拖动验证end
 
     },
-    mounted(){
+    mounted() {
       console.log("进入login mounted方法");
-      var _this = this;
-      var code = "";
-      //从后台获取滑动验证码1
-      //参数 url 访问参数
-      this.$axios.post(this.domain.ssoserverpath+'getCode').then((response)=>{
-        console.log("进入login 获得验证码方法");
-        code=response.data.result;
-        //向浏览器写一个Cookie
-        //document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
-        _this.moveCode(code,_this);
-      }).catch((error)=>{
+      //七天免登陆判断cookies有没有存这个键
+      if (getCookie("jian")) {
+        this.$router.push({path: '/system'})
+      } else {
+        var _this = this;
+        var code = "";
+        //从后台获取滑动验证码1
+        //参数 url 访问参数
+        this.$axios.post(this.domain.ssoserverpath + 'getCode').then((response) => {
+          console.log("进入login 获得验证码方法");
+          code = response.data.result;
+          //向浏览器写一个Cookie
+          //document.cookie = 'testCookies' + "=" + response.data.token + "; " + -1;
+          _this.moveCode(code, _this);
+        }).catch((error) => {
 
-      })
+        })
+      }
     }
   }
 </script>
 
 <style scoped>
 
-  .ms-title{
-    width:100%;
+  .ms-title {
+    width: 100%;
     line-height: 50px;
     text-align: left;
-    font-size:20px;
+    font-size: 20px;
     color: #fff;
-    font-style:italic;
+    font-style: italic;
     border-bottom: 1px solid #ddd;
   }
-  .ms-login{
+
+  .ms-login {
     position: absolute;
-    left:70%;
-    top:50%;
-    width:350px;
-    margin:-190px 0 0 -175px;
+    left: 70%;
+    top: 50%;
+    width: 350px;
+    margin: -190px 0 0 -175px;
     border-radius: 5px;
-    background: rgba(255,255,255, 0.3);
+    background: rgba(255, 255, 255, 0.3);
     overflow: hidden;
   }
-  .ms-content{
+
+  .ms-content {
     padding: 30px 30px;
   }
-  .login-btn{
+
+  .login-btn {
     text-align: center;
   }
-  .login-btn button{
-    width:100%;
-    height:36px;
+
+  .login-btn button {
+    width: 100%;
+    height: 36px;
     margin-bottom: 10px;
   }
-  .login-tips{
-    font-size:12px;
-    line-height:30px;
-    color:#fff;
+
+  .login-tips {
+    font-size: 12px;
+    line-height: 30px;
+    color: #fff;
   }
 
   /** 滑动验证start **/
-  .form-inline-input{
-    border:1px solid #dadada;
-    border-radius:5px;
+  .form-inline-input {
+    border: 1px solid #dadada;
+    border-radius: 5px;
   }
+
   .form-inline-input input,
-  .code-box{
+  .code-box {
     padding: 0 3px;
     width: 290px;
     height: 40px;
@@ -352,47 +382,55 @@
     border-radius: 5px;
     outline: none;
   }
-  .code-box{
+
+  .code-box {
     position: relative;
   }
+
   .code-box p,
-  .code-box span{
-    display:block;
+  .code-box span {
+    display: block;
     position: absolute;
     left: 0;
     height: 40px;
     text-align: center;
     line-height: 40px;
     border-radius: 5px;
-    padding:0;
-    margin:0;
+    padding: 0;
+    margin: 0;
   }
-  .code-box span{
+
+  .code-box span {
     width: 40px;
-    background-color:#fff;
+    background-color: #fff;
     font-size: 16px;
     cursor: pointer;
-    margin-right:1px;
+    margin-right: 1px;
   }
-  .code-box p{
+
+  .code-box p {
     width: 0;
     background-color: #FFFF99;
     overflow: hidden;
     text-indent: -20px;
     transition: background 1s ease-in;
   }
-  .code-box .code-input{
+
+  .code-box .code-input {
     display: none;
   }
-  .code-box .code-input{
+
+  .code-box .code-input {
     display: none;
   }
-  .form-inline-input{
-    border:1px solid #dadada;
-    border-radius:5px;
+
+  .form-inline-input {
+    border: 1px solid #dadada;
+    border-radius: 5px;
   }
+
   .form-inline-input input,
-  .code-box{
+  .code-box {
     padding: 0 3px;
     width: 285px;
     height: 40px;
@@ -403,47 +441,55 @@
     border-radius: 5px;
     outline: none;
   }
-  .code-box{
+
+  .code-box {
     position: relative;
   }
+
   .code-box p,
-  .code-box span{
-    display:block;
+  .code-box span {
+    display: block;
     position: absolute;
     left: 0;
     height: 40px;
     text-align: center;
     line-height: 40px;
     border-radius: 5px;
-    padding:0;
-    margin:0;
+    padding: 0;
+    margin: 0;
   }
-  .code-box span{
+
+  .code-box span {
     width: 70px;
-    background-color:#fff;
+    background-color: #fff;
     font-size: 12px;
     cursor: pointer;
-    margin-right:1px;
+    margin-right: 1px;
   }
-  .code-box p{
+
+  .code-box p {
     width: 0;
     background-color: #F5F7FA;
     overflow: hidden;
     text-indent: -20px;
     transition: background 1s ease-in;
   }
-  .code-box .code-input{
+
+  .code-box .code-input {
     display: none;
   }
-  .code-box .code-input{
+
+  .code-box .code-input {
     display: none;
   }
-  .p-title{
+
+  .p-title {
     color: white;
     font-size: 16px;
     text-align: left;
     padding-left: 20px;
-    font-style:italic
+    font-style: italic
   }
+
   /** 滑动验证end **/
 </style>
