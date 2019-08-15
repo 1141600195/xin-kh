@@ -23,7 +23,7 @@ import axios from 'axios'
 Vue.prototype.$axios = axios
 // 允许携带cookie
 axios.defaults.withCredentials = true
-
+axios.defaults.baseURL=''
 //引入cookie插件
 import Cookies from 'js-cookie'
 
