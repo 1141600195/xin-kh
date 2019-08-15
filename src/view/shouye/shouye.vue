@@ -172,8 +172,8 @@
               if (sts == "ok") {
 
                 //七天免登陆清空cookies
-                delCookie("jian");
-
+                delCookie("loginName");
+                delCookie("password");
 
                 //todo 使用全局没用session
                 // window.sessionStorage.clear();
