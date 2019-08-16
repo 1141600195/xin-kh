@@ -147,9 +147,6 @@
         console.log("==========error========")
         this.webSocketInit();
       },
-      tttt() {
-        alert("ppppppppppp");
-      },
       openParentClose() {
         //调用子组件menu中的openClose()
         this.$refs.iiii.openClose();
