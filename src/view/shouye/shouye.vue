@@ -148,7 +148,7 @@
         this.webSocketInit();
       },
       tttt() {
-        alert("pppp999999");
+        alert("ppppppppppp");
       },
       openParentClose() {
         //调用子组件menu中的openClose()

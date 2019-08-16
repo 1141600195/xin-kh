@@ -63,49 +63,13 @@
           <div slot="header" class="clearfix">
             <span style="font-weight:bold">操作帮助</span>
             <div style="text-align: center"><span>使用蛟龙快速组织信息</span></div>
-          </div>
-          <div class="text item">
-                <div style="margin-left:50px;float:left;height:100px">
-                  <el-tooltip content="点击创库" placement="top" effect="light">
-                      <span >
-                         <span><img src="../../assets/tiku.png"></span>
-                         <br>
-                         <span >创建信息</span>
-                      </span>
-                  </el-tooltip>
-                </div>
-                <div style="margin-left:50px;float:left">
-                  <el-tooltip content="点击导入信息" placement="top" effect="light">
-                      <span >
-                         <span><img src="../../assets/daoru.jpg" style="width:48px"></span>
-                         <br>
-                         <span >导入信息</span>
-                      </span>
-                  </el-tooltip>
-                </div>
-                <div style="margin-left:50px;float:left">
-                  <el-tooltip content="点击创建信息" placement="top" effect="light">
-                          <span >
-                             <span><img src="../../assets/create.png" style="width:48px"></span>
-                             <br>
-                             <span >创建信息</span>
-                          </span>
-                  </el-tooltip>
-                </div>
-                <div style="margin-left:50px;float:left">
-
-                  <el-badge :value="0" class="item">
-                    <el-tooltip content="点击查看结果" placement="top" effect="light">
-                          <span >
-                             <span><img src="../../assets/chakan.jpg" style="width:48px"></span>
-                             <br>
-                             <span >查看结果</span>
-                          </span>
-                    </el-tooltip>
-                  </el-badge>
+            <template>
+              <!--为echarts准备一个具备大小的容器dom-->
+              <div id="main" style="width: 100%;height: 400px;"></div>
+            </template>
 
 
-                </div>
+
             </div>
         </el-card>
       </div>
@@ -113,16 +77,82 @@
 </template>
 
 <script>
+  import echarts from 'echarts'
+
     export default {
         name: "system",
         data(){
           return{
+            data1:'',
+            charts: '',
+            opinionData: ["3", "2", "4", "4", "5"],
             closable:false,
             styleel:{
               left:'200%'
             },
           }
+        },
+      watch:{
+        opinionData(v,f){
+          this.drawLine('main')
         }
+      },
+      mounted() {
+        this.$nextTick(function() {
+          this.drawLine('main')
+        })
+
+
+        this.$axios.post(this.domain.ssoserverpath + 'zhexian').then((res)=>{
+          console.log(res.data.key1);
+          this.opinionData=res.data.key1;
+          this.data1=res.data.value1;
+        })
+      },
+      methods: {
+        drawLine(id) {
+          this.charts = echarts.init(document.getElementById(id))
+          this.charts.setOption({
+            title:{//标题
+              text:'7天登录人数据统计'
+            },
+            tooltip: {
+              trigger: 'axis'
+            },
+            legend: {
+              data: ['近七日收益']
+            },
+            grid: {
+              left: '3%',
+              right: '4%',
+              bottom: '3%',
+              containLabel: true
+            },
+
+            toolbox: {
+              feature: {
+                saveAsImage: {}
+              }
+            },
+            xAxis: {//横轴
+              type: 'category',
+              boundaryGap: false,
+              data: this.opinionData
+
+            },
+            yAxis: {
+              type: 'value'
+            },
+
+            series: [{//竖轴
+              name: '近七日收益',
+              type: 'line',
+              stack: '总量',
+              data: this.data1
+            }]
+          })
+        }
+      }
     }
 </script>
 
@@ -144,5 +174,10 @@
 
   .box-card {
     width:99.5%;
+  }
+  * {
+    margin: 0;
+    padding: 0;
+    list-style: none;
   }
 </style>
