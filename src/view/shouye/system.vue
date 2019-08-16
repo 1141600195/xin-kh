@@ -65,7 +65,7 @@
             <div style="text-align: center"><span>使用蛟龙快速组织信息</span></div>
             <template>
               <!--为echarts准备一个具备大小的容器dom-->
-              <div id="main" style="width: 100%;height: 400px;"></div>
+              <div id="main" style="width: 100%;height: 400px;"> </div>
             </template>
 
 
