@@ -120,7 +120,7 @@
               trigger: 'axis'
             },
             legend: {
-              data: ['近七日收益']
+              data: ['七天登录用户']
             },
             grid: {
               left: '3%',
@@ -145,7 +145,7 @@
             },
 
             series: [{//竖轴
-              name: '近七日收益',
+              name: '七天登录用户',
               type: 'line',
               stack: '总量',
               data: this.data1
