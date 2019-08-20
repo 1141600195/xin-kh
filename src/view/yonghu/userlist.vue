@@ -39,8 +39,8 @@
 
     </el-form>
 
-    <el-button type="primary" @click="dialogFormVisible = true" round>+添加新用户</el-button>
-    <el-button type="primary" @click="downloadExcelone" round>+导出</el-button>
+    <el-button type="primary" v-if="ww.authmap.addUser!=null" @click="dialogFormVisible = true" round>+添加新用户</el-button>
+    <el-button type="primary" v-if="ww.authmap.daochu!=null"  @click="downloadExcelone" round>+导出</el-button>
 
 
     <!--添加-->
@@ -100,7 +100,7 @@
 
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false, entityUser={} ">取 消</el-button>
-        <el-button type="primary" @click="addUser(entityUser.id,'addForm')">确 定</el-button>
+        <el-button type="primary"  @click="addUser(entityUser.id,'addForm')">确 定</el-button>
       </div>
     </el-dialog>
 
@@ -219,16 +219,18 @@
           <el-button
             size="mini"
             type="danger"
+            v-if="ww.authmap.deleteUserById!=null"
             @click="deleteById(scope.$index, scope.row)">删除
           </el-button>
 
           <el-button
             size="mini"
+            v-if="ww.authmap.updateUser!=null"
             @click="updateUser(scope.$index, scope.row)">编辑
           </el-button>
 
-          <!--          绑定角色-->
-          <el-button size="mini" type="primary" @click="bindRole(scope.$index, scope.row)" v-if="scope.row.id!=pid">
+          <!--          绑定角色 scope.row.id!=pid-->
+          <el-button size="mini" type="primary"  @click="bindRole(scope.$index, scope.row)" v-if="ww.authmap.adduserRole!=null">
             绑定角色
           </el-button>
 
@@ -258,6 +260,7 @@
     name: 'userlist',
     data() {
       return {
+        ww:this.$store.state.userInfo,
         userList: [],
         total: 0,
         pageSizes: [2, 3, 5, 10],
@@ -281,6 +284,8 @@
     mounted: function () {
       console.log("进入用户列表");
       this.getuserList();
+      console.log(JSON.stringify(this.$store.state.userInfo));
+
     },
     methods: {
       getuserList() {

@@ -15,7 +15,7 @@
 
     </el-form>
 
-    <el-button type="primary" @click="dialogFormVisible = true">+添加新角色</el-button>
+    <el-button type="primary" v-if="ww.authmap.addRole!=null"   @click="dialogFormVisible = true">+添加新角色</el-button>
 
 
     <!-- 添加  -->
@@ -125,12 +125,14 @@
           <el-button
             size="mini"
             type="danger"
+            v-if="ww.authmap.deleteRoleById!=null"
             @click="deleteroleById(scope.$index, scope.row)">删除
           </el-button>
 
           <el-button
             size="mini"
             type="primary"
+            v-if="ww.authmap.addRm!=null"
             @click="updateRole(scope.$index, scope.row)">编辑绑定权限
           </el-button>
 
@@ -160,6 +162,7 @@
     name: 'userlist',
     data() {
       return {
+        ww:this.$store.state.userInfo,
         roleList: [],
         total: 0,
         pageSizes: [2, 3, 5, 10],

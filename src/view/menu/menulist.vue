@@ -25,10 +25,10 @@
           width="33%"
           :before-close="handleClose">
           <el-row>
-            <el-button icon="el-icon-plus" circle @click="addMenu"></el-button>
-            <el-button type="primary" icon="el-icon-edit" circle @click="updateMenu"></el-button>
-            <el-button type="danger" icon="el-icon-delete" circle @click="deleteMenu"></el-button>
-            <el-button type="warning" icon="el-icon-star-off" circle @click="ownAddMenu"></el-button>
+            <el-button v-if="ww.authmap.addMenu!=null" icon="el-icon-plus" circle @click="addMenu"></el-button>
+            <el-button v-if="ww.authmap.updateMenu!=null" type="primary" icon="el-icon-edit" circle @click="updateMenu"></el-button>
+            <el-button v-if="ww.authmap.delMenu!=null" type="danger" icon="el-icon-delete" circle @click="deleteMenu"></el-button>
+            <el-button v-if="ww.authmap.addMenu!=null" type="warning" icon="el-icon-star-off" circle @click="ownAddMenu"></el-button>
           </el-row>
           <hr/>
           <!--添加子集开始  -->
@@ -155,6 +155,7 @@
     name: 'menulist',
     data() {
       return {
+        ww:this.$store.state.userInfo,
         filterText: '',
         data: [],//总权限列表
         defaultProps: {

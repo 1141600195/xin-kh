@@ -15,6 +15,9 @@ import rolelist from '@/view/role/rolelist'
 //权限列表
 import menulist from '@/view/menu/menulist'
 
+import zhaohui1 from '@/view/zhaohui/zhaohui1'
+import zhaohui2 from '@/view/zhaohui/zhaohui2'
+import zhaohui3 from '@/view/zhaohui/zhaohui3'
 
 Vue.use(Router)
 
@@ -54,6 +57,22 @@ export default new Router({
       path:"/datamenu",
       component:datamenu,
       meta:{require:true}
+    },
+    {
+      path: '/zhaohui1',
+      name: 'zhaohui1',
+      component: zhaohui1,
+      meta:{require: false}
+    }, {
+      path: '/zhaohui2',
+      name: 'zhaohui2',
+      component: zhaohui2,
+      meta:{require: false}
+    }, {
+      path: '/zhaohui3',
+      name: 'zhaohui3',
+      component: zhaohui3,
+      meta:{require: false}
     }
 
   ]

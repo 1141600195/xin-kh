@@ -1,3 +1,5 @@
+
+
 <template>
   <div class="login-wrap" :style="divimg">
 
@@ -44,6 +46,9 @@
 
               <div class="login-btn">
                 <el-button type="primary" @click="submitForm('ruleForm')">登录</el-button>
+              </div>
+              <div>
+                <a @click="wangjimima" >忘记密码</a>
               </div>
 
               <!-- 登录进度 -->
@@ -94,6 +99,7 @@
 </template>
 
 <script>
+
   //七天免登陆
   import {delCookie, getCookie, setCookie} from "../../js/util";
 
@@ -108,7 +114,7 @@
         activeName: 'first',
         checked: false,
         divimg: {//背景图片的使用
-          backgroundImage: "url(" + require('../../assets/yun.jpg') + ")",
+          backgroundImage: "url(" + require('../../assets/66.jpg') + ")",
           backgroundRepeat: "no-repeat",
           height: "100%",
           width: "100%",
@@ -145,6 +151,11 @@
       }
     },
     methods: {
+    wangjimima(){
+      this.$router.push({
+        path: '/zhaohui1',
+      });
+    },
       handleClick(tab, event) {
         console.log(tab, event);
       },
